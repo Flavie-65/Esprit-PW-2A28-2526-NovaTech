@@ -83,7 +83,7 @@ ob_start();
                 </div>
 
                 <!-- BOUTON -->
-                <a href="#" class="btn btn-postuler mt-3">
+                <a  href="postuler.php?id=<?= $offre['id'] ?>" class="btn btn-postuler mt-3">
                     🚀 Postuler
                 </a>
 
