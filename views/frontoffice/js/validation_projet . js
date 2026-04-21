@@ -1,0 +1,30 @@
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('formAjouterProjet');
+    
+    form.addEventListener('submit', function(e) {
+        let error = false;
+        
+        // Nettoyage des erreurs précédentes
+        document.querySelectorAll('.erreur').forEach(el => el.textContent = "");
+
+        const nom = document.getElementById('nom_projet').value;
+        const debut = document.getElementById('date_debut').value;
+        const fin = document.getElementById('date_fin').value;
+
+        // Exemple : Vérifier si le nom est vide
+        if (nom.trim() === "") {
+            document.getElementById('erreur_nom').textContent = "Le nom est requis.";
+            error = true;
+        }
+
+        // Vérifier format date (simple)
+        if (debut.length < 10) {
+            document.getElementById('erreur_date_debut').textContent = "Format AAAA-MM-JJ requis.";
+            error = true;
+        }
+
+        if (error) {
+            e.preventDefault(); // Bloque l'envoi du formulaire
+        }
+    });
+});

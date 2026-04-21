@@ -1,0 +1,132 @@
+/* Reset et Base */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: #F1EFE8; /* Ton fond beige/gris clair */
+    color: #333;
+}
+
+.container {
+    width: 80%;
+    margin: 30px auto;
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+h1, h2 {
+    color: #2c3e50;
+    margin-bottom: 20px;
+    border-bottom: 2px solid #7F77DD; /* Ligne sous titre en Violet */
+    padding-bottom: 10px;
+}
+
+/* Tableaux (Projets et Tâches) */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    background-color: #fff;
+}
+
+thead {
+    background-color: #7F77DD; /* Entête en Violet */
+    color: white;
+}
+
+th, td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+tr:hover {
+    background-color: #f9f8f4; /* Rappel léger du fond au survol */
+}
+
+/* Boutons et Liens */
+.btn-ajouter {
+    display: inline-block;
+    background-color: #7F77DD; /* Bouton ajout en Violet */
+    color: white;
+    padding: 10px 20px;
+    border-radius: 5px;
+    text-decoration: none;
+    margin-bottom: 20px;
+    font-weight: bold;
+}
+
+.btn-ajouter:hover {
+    background-color: #665dbb; /* Violet plus foncé au survol */
+}
+
+a {
+    color: #7F77DD; /* Liens en Violet */
+    text-decoration: none;
+    margin-right: 10px;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+/* Styles spécifiques pour le bouton Supprimer (facultatif mais conseillé) */
+.btn-supprimer {
+    color: #e74c3c; /* Rouge pour la suppression */
+}
+
+/* Formulaires */
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+    color: #2c3e50;
+}
+
+.form-group input,
+.form-group textarea,
+.form-group select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 14px;
+}
+
+.form-group textarea {
+    height: 100px;
+    resize: vertical;
+}
+
+button[type="submit"] {
+    background-color: #7F77DD; /* Bouton enregistrer en Violet */
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: bold;
+}
+
+button[type="submit"]:hover {
+    background-color: #665dbb;
+}
+
+/* Erreurs */
+.erreur {
+    color: red;
+    font-size: 12px;
+    margin-top: 5px;
+    display: block;
+}
