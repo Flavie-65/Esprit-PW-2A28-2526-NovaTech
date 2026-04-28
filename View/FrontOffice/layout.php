@@ -57,9 +57,10 @@
     <div class="container">
 
         <!-- Logo -->
-        <a class="navbar-brand" href="index.php">
-            🟢 OrgaSync
-        </a>
+       <a class="navbar-brand d-flex align-items-center" href="index.php">
+    <img src="http://localhost:8080/jobboard/assets/images/logo.png" width="40">
+    <span class="ms-2">OrgaSync</span>
+</a>
 
         <!-- Menu -->
         <div>

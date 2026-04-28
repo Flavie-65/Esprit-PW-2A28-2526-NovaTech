@@ -1,47 +1,103 @@
 <?php
 include_once '../../Controller/OffreController.php';
+include_once '../../Controller/CandidatureController.php';
+
 $offreC = new OffreController();
+$cC = new CandidatureController();
+
 $liste = $offreC->afficherOffres();
+
+$stats = $cC->getStats();
+$total = $stats['total'];
+$attente = $cC->countEnAttente();
+$validees = $cC->countValidees();
+$refusees = $total - ($attente + $validees);
 
 ob_start();
 ?>
 
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h2 class="mb-0">Gestion des offres</h2>
+<style>
+.card-stat {
+    border-radius: 15px;
+    padding: 20px;
+    color: white;
+    transition: 0.3s;
+}
+.card-stat:hover {
+    transform: translateY(-5px);
+}
 
-    <a href="add.php" class="btn" style="background:#1D9E75;color:white;">
+.bg-main { background: linear-gradient(135deg, #1D9E75, #0F6E56); }
+.bg-blue { background: linear-gradient(135deg, #378ADD, #1F5DA8); }
+.bg-orange { background: linear-gradient(135deg, #F39C12, #D68910); }
+.bg-green { background: linear-gradient(135deg, #2ECC71, #27AE60); }
+.bg-red { background: linear-gradient(135deg, #E74C3C, #C0392B); }
+
+.table thead {
+    background: #f8f9fa;
+}
+
+.table tbody tr {
+    transition: 0.2s;
+}
+.table tbody tr:hover {
+    background: #f1f1f1;
+}
+
+.badge-date {
+    background: #eee;
+    padding: 6px 10px;
+    border-radius: 8px;
+}
+
+.btn-action {
+    border-radius: 8px;
+}
+</style>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>📊 Gestion des offres</h2>
+
+    <a href="add.php" class="btn btn-success">
         <i class="bi bi-plus-circle"></i> Ajouter
     </a>
 </div>
 
-<!-- 🔥 STATS (plus compactes) -->
-<div class="row g-3 mb-4">
+<!-- 🔥 STATS PRO -->
+<div class="row g-4 mb-4">
 
     <div class="col-md-3">
-        <div class="card shadow-sm p-3">
-            <small class="text-muted">Total Offres</small>
-            <h4><?= count($liste); ?></h4>
+        <div class="card-stat bg-main">
+            <h6>Total Offres</h6>
+            <h2><?= count($liste); ?></h2>
         </div>
     </div>
 
     <div class="col-md-3">
-        <div class="card shadow-sm p-3">
-            <small class="text-muted">Candidatures</small>
-            <h4>34</h4>
+        <div class="card-stat bg-blue">
+            <h6>Candidatures</h6>
+            <h2><?= $total; ?></h2>
         </div>
     </div>
 
     <div class="col-md-3">
-        <div class="card shadow-sm p-3">
-            <small class="text-muted">En attente</small>
-            <h4>8</h4>
+        <div class="card-stat bg-orange">
+            <h6>En attente</h6>
+            <h2><?= $attente; ?></h2>
         </div>
     </div>
 
     <div class="col-md-3">
-        <div class="card shadow-sm p-3">
-            <small class="text-muted">Validées</small>
-            <h4>20</h4>
+        <div class="card-stat bg-green">
+            <h6>Validées</h6>
+            <h2><?= $validees; ?></h2>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card-stat bg-red">
+            <h6>Refusées</h6>
+            <h2><?= $refusees; ?></h2>
         </div>
     </div>
 
@@ -49,17 +105,16 @@ ob_start();
 
 <!-- 🔥 TABLE PRO -->
 <div class="card shadow-sm">
-
     <div class="card-body">
 
         <table class="table align-middle">
 
-            <thead class="table-light">
+            <thead>
                 <tr>
                     <th>ID</th>
-                    <th>Titre</th>
+                    <th>Offre</th>
                     <th>Compétences</th>
-                    <th>Date limite</th>
+                    <th>Date</th>
                     <th>Budget</th>
                     <th class="text-end">Actions</th>
                 </tr>
@@ -73,13 +128,19 @@ ob_start();
 
                     <td>
                         <strong><?= $offre['titre']; ?></strong><br>
-                        <small class="text-muted"><?= substr($offre['description'], 0, 40); ?>...</small>
+                        <small class="text-muted">
+                            <?= substr($offre['description'], 0, 50); ?>...
+                        </small>
                     </td>
-
-                    <td><?= $offre['competences']; ?></td>
 
                     <td>
                         <span class="badge bg-light text-dark">
+                            <?= $offre['competences']; ?>
+                        </span>
+                    </td>
+
+                    <td>
+                        <span class="badge-date">
                             <?= $offre['date_limite']; ?>
                         </span>
                     </td>
@@ -90,13 +151,14 @@ ob_start();
 
                     <td class="text-end">
 
-                        <a class="btn btn-sm btn-outline-warning"
+                        <a class="btn btn-sm btn-warning btn-action"
                            href="edit.php?id=<?= $offre['id']; ?>">
                            <i class="bi bi-pencil"></i>
                         </a>
 
-                        <a class="btn btn-sm btn-outline-danger"
-                           href="delete.php?id=<?= $offre['id']; ?>">
+                        <a class="btn btn-sm btn-danger btn-action"
+                           href="delete.php?id=<?= $offre['id']; ?>"
+                           onclick="return confirm('Supprimer cette offre ?')">
                            <i class="bi bi-trash"></i>
                         </a>
 

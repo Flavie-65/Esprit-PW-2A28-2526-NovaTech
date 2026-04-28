@@ -1,11 +1,14 @@
 <?php
 session_start();
 
-// 🔒 Protection (empêche accès sans login)
+// 🔒 Protection
 if (!isset($_SESSION['admin'])) {
     header("Location: login.php");
     exit();
 }
+
+// 🔥 PAGE ACTIVE
+$current = basename($_SERVER['PHP_SELF']);
 ?>
 
 <!DOCTYPE html>
@@ -13,7 +16,7 @@ if (!isset($_SESSION['admin'])) {
 <head>
     <title>OrgaSync</title>
 
-    <!-- Bootstrap -->
+    <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 
     <!-- Icons -->
@@ -46,10 +49,17 @@ if (!isset($_SESSION['admin'])) {
             border-radius: 8px;
             margin-bottom: 5px;
             text-decoration: none;
+            transition: 0.3s;
         }
 
         .sidebar a:hover {
             background: #1D9E75;
+        }
+
+        .active-link {
+            background: #1D9E75;
+            color: white !important;
+            font-weight: 500;
         }
 
         .topbar {
@@ -82,52 +92,47 @@ if (!isset($_SESSION['admin'])) {
     <!-- 🔹 SIDEBAR -->
     <div class="sidebar">
 
-        <h4 class="mb-4">OrgaSync</h4>
+        <div class="d-flex align-items-center mb-4">
+            <img src="../../assets/images/logo.png" alt="logo" width="35" class="me-2">
+            <h4 class="m-0 text-white">OrgaSync</h4>
+        </div>
 
-        <a href="dashboard.php">
+        <a href="dashboard.php"
+           class="<?= ($current == 'dashboard.php') ? 'active-link' : '' ?>">
             <i class="bi bi-speedometer2"></i> Dashboard
         </a>
 
-        <h6>Utilisateurs</h6>
-        <a href="#">
-            <i class="bi bi-person"></i> Liste utilisateurs
-        </a>
+        <h6>UTILISATEURS</h6>
+        <a href="#"><i class="bi bi-person"></i> Liste utilisateurs</a>
 
-        <h6>Recrutement</h6>
-        <a href="list.php">
+        <h6>RECRUTEMENT</h6>
+
+        <a href="list.php"
+           class="<?= in_array($current, ['list.php','add.php','edit.php']) ? 'active-link' : '' ?>">
             <i class="bi bi-briefcase"></i> Offres d’emploi
         </a>
-        <a href="candidatures.php">
+
+        <a href="candidatures.php"
+           class="<?= in_array($current, ['candidatures.php','show.php']) ? 'active-link' : '' ?>">
             <i class="bi bi-file-earmark-text"></i> Candidatures
         </a>
 
-        <h6>Projets</h6>
-        <a href="#">
-            <i class="bi bi-folder"></i> Projets
-        </a>
-        <a href="#">
-            <i class="bi bi-list-check"></i> Tâches
-        </a>
+        <h6>PROJETS</h6>
+        <a href="#"><i class="bi bi-folder"></i> Projets</a>
+        <a href="#"><i class="bi bi-list-check"></i> Tâches</a>
 
-        <h6>Collaboration</h6>
-        <a href="#">
-            <i class="bi bi-calendar"></i> Planning
-        </a>
-        <a href="#">
-            <i class="bi bi-people"></i> Équipe
-        </a>
+        <h6>COLLABORATION</h6>
+        <a href="#"><i class="bi bi-calendar"></i> Planning</a>
+        <a href="#"><i class="bi bi-people"></i> Équipe</a>
 
-        <h6>Paramètres</h6>
-        <a href="#">
-            <i class="bi bi-gear"></i> Paramètres
-        </a>
+        <h6>PARAMÈTRES</h6>
+        <a href="#"><i class="bi bi-gear"></i> Paramètres</a>
 
     </div>
 
     <!-- 🔹 CONTENU -->
     <div class="flex-grow-1">
 
-        <!-- 🔥 TOPBAR AVEC LOGOUT -->
         <div class="topbar d-flex justify-content-between align-items-center">
             <h5 class="mb-0">
                 Bienvenue, <?= $_SESSION['admin']; ?> 👋
@@ -138,7 +143,6 @@ if (!isset($_SESSION['admin'])) {
             </a>
         </div>
 
-        <!-- CONTENU PAGE -->
         <div class="p-4">
             <?php
             if (isset($content)) {
@@ -150,6 +154,9 @@ if (!isset($_SESSION['admin'])) {
     </div>
 
 </div>
+
+<!-- 🔥🔥🔥 TRÈS IMPORTANT (FIX MODAL) -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
 </body>
 </html>

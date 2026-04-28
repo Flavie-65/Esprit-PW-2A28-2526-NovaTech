@@ -1,33 +1,31 @@
 <?php
-include_once __DIR__ . '/../Model/OffreC.php';
+include_once __DIR__ . '/../Model/Offre.php';
 
 class OffreController {
 
     function afficherOffres() {
-        $sql = "SELECT * FROM offres";
-    $db = config::getConnexion();
-    $liste = $db->query($sql);
-
-    return $liste->fetchAll();
+        return Offre::afficher();
     }
 
     function ajouterOffre($titre, $description, $competences, $date_limite, $budget) {
-    $offreC = new OffreC();
-    $offreC->ajouterOffre($titre, $description, $competences, $date_limite, $budget);
+
+    // 🔥 créer objet Offre
+    $offre = new Offre($titre, $description, $competences, $date_limite, $budget);
+
+    // 🔥 appeler la méthode ajouter
+    $offre->ajouter();
 }
+
     function supprimerOffre($id) {
-        $offreC = new OffreC();
-        $offreC->supprimerOffre($id);
+        Offre::supprimer($id);
     }
 
-    function modifierOffre($titre, $description, $competences, $date_limite, $budget, $id) {
-    $offreC = new OffreC();
-    $offreC->modifierOffre($titre, $description, $competences, $date_limite, $budget, $id);
-}
-
     function recupererOffre($id) {
-        $offreC = new OffreC();
-        return $offreC->recupererOffre($id);
+        return Offre::recuperer($id);
+    }
+
+    function modifierOffre($offre, $id) {
+        Offre::modifier($offre, $id);
     }
 }
 ?>
