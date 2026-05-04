@@ -1,90 +1,56 @@
 <?php
-include_once 'config.php';
+require_once __DIR__ . '/config.php';
 
 class Offre {
 
-    private $titre;
-    private $description;
-    private $competences;
-    private $date_limite;
-    private $budget;
-
-    function __construct($titre, $description, $competences, $date_limite, $budget) {
-        $this->titre = $titre;
-        $this->description = $description;
-        $this->competences = $competences;
-        $this->date_limite = $date_limite;
-        $this->budget = $budget;
-    }
-
-    // 🔹 Ajouter
-    function ajouter() {
-        $db = config::getConnexion();
-
+    // 🔹 INSERT
+    public static function insert($db, $data) {
         $sql = "INSERT INTO offres (titre, description, competences, date_limite, budget)
                 VALUES (:titre, :description, :competences, :date_limite, :budget)";
 
         $req = $db->prepare($sql);
-        $req->execute([
-            'titre'=>$this->titre,
-            'description'=>$this->description,
-            'competences'=>$this->competences,
-            'date_limite'=>$this->date_limite,
-            'budget'=>$this->budget
-        ]);
+
+        return $req->execute($data);
     }
 
-    // 🔹 Afficher
-    static function afficher() {
-        $db = config::getConnexion();
-        return $db->query("SELECT * FROM offres ORDER BY id DESC")->fetchAll();
+    // 🔹 SELECT ALL
+    public static function getAll($db) {
+        return $db->query("SELECT * FROM offres ORDER BY id DESC")
+                  ->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    // 🔹 Supprimer
-    static function supprimer($id) {
-        $db = config::getConnexion();
-        $req = $db->prepare("DELETE FROM offres WHERE id=:id");
-        $req->execute(['id'=>$id]);
+    // 🔹 DELETE
+    public static function deleteById($db, $id) {
+        $req = $db->prepare("DELETE FROM offres WHERE id = :id");
+        return $req->execute(['id' => (int)$id]);
     }
 
-    // 🔹 Récupérer
-    static function recuperer($id) {
-        $db = config::getConnexion();
-        $req = $db->prepare("SELECT * FROM offres WHERE id=:id");
-        $req->execute(['id'=>$id]);
-        return $req->fetch();
+    // 🔹 GET ONE
+    public static function getById($db, $id) {
+        $req = $db->prepare("SELECT * FROM offres WHERE id = :id");
+        $req->execute(['id' => (int)$id]);
+        return $req->fetch(PDO::FETCH_ASSOC);
     }
 
-    public function getEtat() {
-    $today = date('Y-m-d');
-
-    if ($today > $this->date_limite) {
-        return "Fermée";
-    } else {
-        return "Active";
-    }
-}
-
-    // 🔹 Modifier
-    static function modifier($offre, $id) {
-        $db = config::getConnexion();
-
+    // 🔹 UPDATE
+    public static function update($db, $id, $data) {
         $sql = "UPDATE offres SET 
-                titre=:titre,
-                description=:description,
-                competences=:competences,
-                date_limite=:date_limite,
-                budget=:budget
-                WHERE id=:id";
+                titre = :titre,
+                description = :description,
+                competences = :competences,
+                date_limite = :date_limite,
+                budget = :budget
+                WHERE id = :id";
 
         $req = $db->prepare($sql);
-        $req->execute([
-            'id'=>$id,
-            'titre'=>$offre->titre,
-            'description'=>$offre->description,
-            'competences'=>$offre->competences,
-            'date_limite'=>$offre->date_limite,
-            'budget'=>$offre->budget
+
+        return $req->execute([
+            'id' => (int)$id,
+            'titre' => $data['titre'],
+            'description' => $data['description'],
+            'competences' => $data['competences'],
+            'date_limite' => $data['date_limite'],
+            'budget' => $data['budget']
         ]);
     }
 }

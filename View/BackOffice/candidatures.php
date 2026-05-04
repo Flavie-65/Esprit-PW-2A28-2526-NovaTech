@@ -36,13 +36,15 @@ if (isset($_GET['action']) && isset($_GET['id'])) {
         $date = $_POST['date'] ?? '';
         $heure = $_POST['heure'] ?? '';
 
+        // 🔥 CORRECTION FORMAT HEURE
+        $heure = substr($heure, 0, 5);
+
         try {
             $candidatureC->planifierEntretien($id, $date, $heure);
             header("Location: candidatures.php?success=1");
             exit();
         } catch (Exception $e) {
-            $message = $e->getMessage();
-            $type = "danger";
+            die("ERREUR: " . $e->getMessage());
         }
     }
 }
@@ -128,17 +130,13 @@ ob_start();
 
     <td><?= $c['date_candidature'] ?></td>
 
-    <!-- ✅ ACTIONS CORRIGÉES -->
+    <!-- ✅ ACTIONS -->
     <td>
         <a href="show.php?id=<?= $c['id'] ?>" class="btn btn-sm btn-info">👁</a>
 
-        <!-- ✔ toujours visible -->
         <a href="?action=valider&id=<?= $c['id'] ?>" class="btn btn-sm btn-success">✔</a>
-
-        <!-- ❌ toujours visible -->
         <a href="?action=refuser&id=<?= $c['id'] ?>" class="btn btn-sm btn-danger">✖</a>
 
-        <!-- 📅 planifier -->
         <?php if ($c['statut'] === 'validee' || $c['statut'] === 'entretien') { ?>
         <button type="button" class="btn btn-sm btn-primary"
             data-bs-toggle="modal"
@@ -173,11 +171,13 @@ ob_start();
 
 <div class="modal-body">
 
-<label>Date :</label>
-<input type="date" name="date" id="dateInput" class="form-control mb-2" required>
+<input type="text" name="date" id="dateInput"
+       placeholder="YYYY-MM-DD"
+       class="form-control mb-2" required>
 
-<label>Heure :</label>
-<input type="time" name="heure" id="heureInput" class="form-control" required>
+<input type="text" name="heure" id="heureInput"
+       placeholder="HH:MM"
+       class="form-control" required>
 
 </div>
 

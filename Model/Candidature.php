@@ -3,45 +3,17 @@ require_once __DIR__ . '/config.php';
 
 class Candidature {
 
-    private $nom;
-    private $email;
-    private $message;
-    private $cv;
-    private $statut;
-    private $offre_id;
-
-    function __construct($nom, $email, $message, $cv, $offre_id) {
-        $this->nom = htmlspecialchars(trim($nom));
-        $this->email = htmlspecialchars(trim($email));
-        $this->message = htmlspecialchars(trim($message));
-        $this->cv = $cv;
-        $this->offre_id = (int)$offre_id;
-        $this->statut = "en_attente";
-    }
-
-    // 🔹 AJOUTER
-    public function ajouter() {
-        $db = config::getConnexion();
-
+    // 🔹 INSERT
+    public static function insert($db, $data) {
         $sql = "INSERT INTO candidatures (nom,email,message,cv,statut,offre_id)
                 VALUES (:nom,:email,:message,:cv,:statut,:offre_id)";
 
         $req = $db->prepare($sql);
-
-        return $req->execute([
-            'nom' => $this->nom,
-            'email' => $this->email,
-            'message' => $this->message,
-            'cv' => $this->cv,
-            'statut' => $this->statut,
-            'offre_id' => $this->offre_id
-        ]);
+        return $req->execute($data);
     }
 
-    // 🔹 AFFICHER
-    public static function afficher() {
-        $db = config::getConnexion();
-
+    // 🔹 SELECT ALL
+    public static function getAll($db) {
         $sql = "SELECT c.*, o.titre 
                 FROM candidatures c
                 JOIN offres o ON c.offre_id = o.id
@@ -50,10 +22,15 @@ class Candidature {
         return $db->query($sql)->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    // 🔍 RECHERCHE
-    public static function rechercher($search) {
-        $db = config::getConnexion();
+    // 🔹 GET BY ID
+    public static function getById($db, $id) {
+        $req = $db->prepare("SELECT * FROM candidatures WHERE id = :id");
+        $req->execute(['id' => (int)$id]);
+        return $req->fetch(PDO::FETCH_ASSOC);
+    }
 
+    // 🔍 SEARCH
+    public static function search($db, $search) {
         $sql = "SELECT c.*, o.titre 
                 FROM candidatures c
                 JOIN offres o ON c.offre_id = o.id
@@ -66,25 +43,14 @@ class Candidature {
         return $req->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    // 🔹 SUPPRIMER
-    public static function supprimer($id) {
-        $db = config::getConnexion();
-
+    // 🔹 DELETE
+    public static function deleteById($db, $id) {
         $req = $db->prepare("DELETE FROM candidatures WHERE id = :id");
         return $req->execute(['id' => (int)$id]);
     }
 
-    // 🔹 CHANGER STATUT
-    public static function changerStatut($id, $statut) {
-
-        $allowed = ['en_attente', 'validee', 'refusee', 'entretien'];
-
-        if (!in_array($statut, $allowed)) {
-            throw new Exception("Statut invalide");
-        }
-
-        $db = config::getConnexion();
-
+    // 🔹 UPDATE STATUT
+    public static function updateStatut($db, $id, $statut) {
         $req = $db->prepare("UPDATE candidatures SET statut = :s WHERE id = :id");
 
         return $req->execute([
@@ -93,56 +59,32 @@ class Candidature {
         ]);
     }
 
-    // 📅 PLANIFIER ENTRETIEN (VERSION CORRIGÉE + PRO)
-    // 📅 PLANIFIER / MODIFIER ENTRETIEN (VERSION FINALE)
-public static function planifierEntretien($id, $date, $heure)
-{
-    $db = config::getConnexion();
+    // 🔹 PLANIFIER ENTRETIEN
+    public static function planifier($db, $id, $date, $heure) {
+        $sql = "UPDATE candidatures 
+                SET date_entretien = :date,
+                    heure_entretien = :heure,
+                    statut = 'entretien'
+                WHERE id = :id";
 
-    // 🔍 Vérifier si la candidature existe
-    $check = $db->prepare("SELECT statut FROM candidatures WHERE id = :id");
-    $check->execute(['id' => (int)$id]);
-    $c = $check->fetch(PDO::FETCH_ASSOC);
+        $req = $db->prepare($sql);
 
-    if (!$c) {
-        throw new Exception("Candidature introuvable");
+        return $req->execute([
+            'date' => $date,
+            'heure' => $heure,
+            'id' => (int)$id
+        ]);
     }
 
-    // ✅ Autoriser VALIDE + ENTRETIEN
-    if (!in_array($c['statut'], ['validee', 'entretien'])) {
-        throw new Exception("La candidature doit être validée");
+    // 🔥 NOUVELLE FONCTION MÉTIER (IMPORTANT)
+    public static function countByOffre($db, $offre_id) {
+        $req = $db->prepare("SELECT COUNT(*) FROM candidatures WHERE offre_id = ?");
+        $req->execute([(int)$offre_id]);
+        return $req->fetchColumn();
     }
-
-    // ⏰ Vérifier date future
-    $dateTime = strtotime($date . ' ' . $heure);
-    if ($dateTime <= time()) {
-        throw new Exception("Date invalide");
-    }
-
-    // 🔥 UPDATE (planifier OU modifier)
-    $sql = "UPDATE candidatures 
-            SET date_entretien = :date,
-                heure_entretien = :heure,
-                statut = 'entretien'
-            WHERE id = :id";
-
-    $req = $db->prepare($sql);
-
-    if (!$req->execute([
-        'date' => $date,
-        'heure' => $heure,
-        'id' => (int)$id
-    ])) {
-        throw new Exception("Erreur lors de la mise à jour");
-    }
-
-    return true;
-}
 
     // 🔥 STATS
-    public static function getStats() {
-        $db = config::getConnexion();
-
+    public static function getStats($db) {
         $sql = "SELECT 
                     COUNT(*) as total,
                     SUM(statut='validee') as valide,
@@ -165,34 +107,24 @@ public static function planifierEntretien($id, $date, $heure)
     }
 
     // 🔹 DASHBOARD
-    public static function countAll() {
-        return config::getConnexion()
-            ->query("SELECT COUNT(*) FROM candidatures")
-            ->fetchColumn();
+    public static function countAll($db) {
+        return $db->query("SELECT COUNT(*) FROM candidatures")->fetchColumn();
     }
 
-    public static function countAttente() {
-        return config::getConnexion()
-            ->query("SELECT COUNT(*) FROM candidatures WHERE statut='en_attente'")
-            ->fetchColumn();
+    public static function countAttente($db) {
+        return $db->query("SELECT COUNT(*) FROM candidatures WHERE statut='en_attente'")->fetchColumn();
     }
 
-    public static function countValide() {
-        return config::getConnexion()
-            ->query("SELECT COUNT(*) FROM candidatures WHERE statut='validee'")
-            ->fetchColumn();
+    public static function countValide($db) {
+        return $db->query("SELECT COUNT(*) FROM candidatures WHERE statut='validee'")->fetchColumn();
     }
 
-    public static function countRefuse() {
-        return config::getConnexion()
-            ->query("SELECT COUNT(*) FROM candidatures WHERE statut='refusee'")
-            ->fetchColumn();
+    public static function countRefuse($db) {
+        return $db->query("SELECT COUNT(*) FROM candidatures WHERE statut='refusee'")->fetchColumn();
     }
 
-    public static function countEntretien() {
-        return config::getConnexion()
-            ->query("SELECT COUNT(*) FROM candidatures WHERE statut='entretien'")
-            ->fetchColumn();
+    public static function countEntretien($db) {
+        return $db->query("SELECT COUNT(*) FROM candidatures WHERE statut='entretien'")->fetchColumn();
     }
 }
 ?>

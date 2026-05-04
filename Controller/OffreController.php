@@ -1,31 +1,72 @@
 <?php
-include_once __DIR__ . '/../Model/Offre.php';
+require_once __DIR__ . '/../Model/Offre.php';
+require_once __DIR__ . '/../Model/config.php';
 
 class OffreController {
 
+    // 🔹 AFFICHER
     function afficherOffres() {
-        return Offre::afficher();
+        $db = config::getConnexion();
+        return Offre::getAll($db);
     }
 
-    function ajouterOffre($titre, $description, $competences, $date_limite, $budget) {
+    // 🔹 AJOUTER
+    function ajouterOffre($data) {
+        $db = config::getConnexion();
 
-    // 🔥 créer objet Offre
-    $offre = new Offre($titre, $description, $competences, $date_limite, $budget);
+        // ✅ validation (MVC correct)
+        if (empty($data['titre']) || empty($data['description'])) {
+            return "❌ Champs obligatoires";
+        }
 
-    // 🔥 appeler la méthode ajouter
-    $offre->ajouter();
-}
+        return Offre::insert($db, [
+            'titre' => trim($data['titre']),
+            'description' => trim($data['description']),
+            'competences' => trim($data['competences'] ?? ""),
+            'date_limite' => $data['date_limite'],
+            'budget' => $data['budget']
+        ]);
+    }
 
+    // 🔹 SUPPRIMER
     function supprimerOffre($id) {
-        Offre::supprimer($id);
+        $db = config::getConnexion();
+
+        $offre = Offre::getById($db, $id);
+        if (!$offre) {
+            return "❌ Offre introuvable";
+        }
+
+        return Offre::deleteById($db, $id);
     }
 
+    // 🔹 RÉCUPÉRER
     function recupererOffre($id) {
-        return Offre::recuperer($id);
+        $db = config::getConnexion();
+        return Offre::getById($db, $id);
     }
 
-    function modifierOffre($offre, $id) {
-        Offre::modifier($offre, $id);
+    // 🔹 MODIFIER
+    function modifierOffre($id, $data) {
+        $db = config::getConnexion();
+
+        if (empty($data['titre']) || empty($data['description'])) {
+            return "❌ Champs obligatoires";
+        }
+
+        return Offre::update($db, $id, [
+            'titre' => trim($data['titre']),
+            'description' => trim($data['description']),
+            'competences' => trim($data['competences'] ?? ""),
+            'date_limite' => $data['date_limite'],
+            'budget' => $data['budget']
+        ]);
+    }
+
+    // 🔹 ÉTAT (logique métier ici ✔)
+    function getEtat($date_limite) {
+        $today = date('Y-m-d');
+        return ($today > $date_limite) ? "Fermée" : "Active";
     }
 }
 ?>

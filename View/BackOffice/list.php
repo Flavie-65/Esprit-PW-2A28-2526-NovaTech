@@ -63,7 +63,7 @@ ob_start();
     </a>
 </div>
 
-<!-- 🔥 STATS PRO -->
+<!-- 🔥 STATS -->
 <div class="row g-4 mb-4">
 
     <div class="col-md-3">
@@ -103,7 +103,7 @@ ob_start();
 
 </div>
 
-<!-- 🔥 TABLE PRO -->
+<!-- 🔥 TABLE -->
 <div class="card shadow-sm">
     <div class="card-body">
 
@@ -127,15 +127,15 @@ ob_start();
                     <td><?= $offre['id']; ?></td>
 
                     <td>
-                        <strong><?= $offre['titre']; ?></strong><br>
+                        <strong><?= htmlspecialchars($offre['titre']); ?></strong><br>
                         <small class="text-muted">
-                            <?= substr($offre['description'], 0, 50); ?>...
+                            <?= htmlspecialchars(substr($offre['description'], 0, 50)); ?>...
                         </small>
                     </td>
 
                     <td>
                         <span class="badge bg-light text-dark">
-                            <?= $offre['competences']; ?>
+                            <?= htmlspecialchars($offre['competences']); ?>
                         </span>
                     </td>
 
@@ -151,16 +151,17 @@ ob_start();
 
                     <td class="text-end">
 
+                        <!-- ✏️ Modifier -->
                         <a class="btn btn-sm btn-warning btn-action"
                            href="edit.php?id=<?= $offre['id']; ?>">
                            <i class="bi bi-pencil"></i>
                         </a>
 
-                        <a class="btn btn-sm btn-danger btn-action"
-                           href="delete.php?id=<?= $offre['id']; ?>"
-                           onclick="return confirm('Supprimer cette offre ?')">
-                           <i class="bi bi-trash"></i>
-                        </a>
+                        <!-- 🗑 Supprimer (SweetAlert) -->
+                        <button class="btn btn-sm btn-danger btn-action"
+                                onclick="confirmDelete(<?= $offre['id']; ?>)">
+                            <i class="bi bi-trash"></i>
+                        </button>
 
                     </td>
 
@@ -177,3 +178,25 @@ ob_start();
 $content = ob_get_clean();
 include 'layout.php';
 ?>
+
+<!-- 🔥 SWEETALERT -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+function confirmDelete(id) {
+    Swal.fire({
+        title: 'Supprimer cette offre ?',
+        text: "Cette action est irréversible !",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#E74C3C',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: 'Oui, supprimer',
+        cancelButtonText: 'Annuler'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            window.location.href = "delete.php?id=" + id;
+        }
+    });
+}
+</script>

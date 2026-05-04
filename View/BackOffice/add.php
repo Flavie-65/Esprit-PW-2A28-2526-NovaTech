@@ -46,13 +46,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // ✅ SI OK
     if (empty($errors)) {
 
-        $offreC->ajouterOffre(
-            $titre,
-            $description,
-            $competences,
-            $date_limite,
-            $budget
-        );
+       $offreC->ajouterOffre([
+    'titre' => $titre,
+    'description' => $description,
+    'competences' => $competences,
+    'date_limite' => $date_limite,
+    'budget' => $budget
+]);
 
         header('Location: list.php');
         exit();
