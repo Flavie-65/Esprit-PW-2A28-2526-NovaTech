@@ -7,11 +7,13 @@ $cC = new CandidatureController();
 
 $liste = $offreC->afficherOffres();
 
+/* 🔥 STATS */
 $stats = $cC->getStats();
-$total = $stats['total'];
+
+$total = $stats['total'] ?? 0;
 $attente = $cC->countEnAttente();
 $validees = $cC->countValidees();
-$refusees = $total - ($attente + $validees);
+$refusees = $cC->countRefusees();
 
 ob_start();
 ?>
@@ -23,9 +25,7 @@ ob_start();
     color: white;
     transition: 0.3s;
 }
-.card-stat:hover {
-    transform: translateY(-5px);
-}
+.card-stat:hover { transform: translateY(-5px); }
 
 .bg-main { background: linear-gradient(135deg, #1D9E75, #0F6E56); }
 .bg-blue { background: linear-gradient(135deg, #378ADD, #1F5DA8); }
@@ -33,16 +33,7 @@ ob_start();
 .bg-green { background: linear-gradient(135deg, #2ECC71, #27AE60); }
 .bg-red { background: linear-gradient(135deg, #E74C3C, #C0392B); }
 
-.table thead {
-    background: #f8f9fa;
-}
-
-.table tbody tr {
-    transition: 0.2s;
-}
-.table tbody tr:hover {
-    background: #f1f1f1;
-}
+.table tbody tr:hover { background: #f1f1f1; }
 
 .badge-date {
     background: #eee;
@@ -59,9 +50,16 @@ ob_start();
     <h2>📊 Gestion des offres</h2>
 
     <a href="add.php" class="btn btn-success">
-        <i class="bi bi-plus-circle"></i> Ajouter
+        ➕ Ajouter
     </a>
 </div>
+
+<!-- 🔥 MESSAGE SUCCESS -->
+<?php if (isset($_GET['success'])): ?>
+<div class="alert alert-success">
+    ✅ Offre supprimée avec succès
+</div>
+<?php endif; ?>
 
 <!-- 🔥 STATS -->
 <div class="row g-4 mb-4">
@@ -121,7 +119,7 @@ ob_start();
             </thead>
 
             <tbody>
-            <?php foreach ($liste as $offre) { ?>
+            <?php foreach ($liste as $offre): ?>
                 <tr>
 
                     <td><?= $offre['id']; ?></td>
@@ -141,7 +139,7 @@ ob_start();
 
                     <td>
                         <span class="badge-date">
-                            <?= $offre['date_limite']; ?>
+                            <?= htmlspecialchars($offre['date_limite']); ?>
                         </span>
                     </td>
 
@@ -151,22 +149,22 @@ ob_start();
 
                     <td class="text-end">
 
-                        <!-- ✏️ Modifier -->
+                        <!-- ✏️ EDIT -->
                         <a class="btn btn-sm btn-warning btn-action"
                            href="edit.php?id=<?= $offre['id']; ?>">
-                           <i class="bi bi-pencil"></i>
+                           ✏️
                         </a>
 
-                        <!-- 🗑 Supprimer (SweetAlert) -->
+                        <!-- 🗑 DELETE -->
                         <button class="btn btn-sm btn-danger btn-action"
                                 onclick="confirmDelete(<?= $offre['id']; ?>)">
-                            <i class="bi bi-trash"></i>
+                            🗑
                         </button>
 
                     </td>
 
                 </tr>
-            <?php } ?>
+            <?php endforeach; ?>
             </tbody>
 
         </table>
@@ -186,7 +184,7 @@ include 'layout.php';
 function confirmDelete(id) {
     Swal.fire({
         title: 'Supprimer cette offre ?',
-        text: "Cette action est irréversible !",
+        text: "Cette action est irréversible",
         icon: 'warning',
         showCancelButton: true,
         confirmButtonColor: '#E74C3C',

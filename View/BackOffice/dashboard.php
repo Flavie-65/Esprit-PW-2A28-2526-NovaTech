@@ -1,119 +1,88 @@
 <?php
 include_once '../../Controller/CandidatureController.php';
-include_once '../../Controller/OffreController.php';
+require_once '../../Model/Candidature.php';
 
 $cC = new CandidatureController();
-$oC = new OffreController();
-
-// 🔥 STATS OPTIMISÉES (1 seule requête)
-$stats = $cC->getStats();
-
-$total     = $stats['total'];
-$validees  = $stats['valide'];
-$refusees  = $stats['refuse'];
-$attente   = $stats['attente'];
-
-$liste = $oC->afficherOffres();
+$liste = $cC->afficherCandidatures();
 
 ob_start();
 ?>
 
-<h2 class="mb-4 fw-bold">📊 Tableau de bord</h2>
+<h2 class="mb-4">📋 Gestion des candidatures</h2>
 
-<a href="add.php" class="btn mb-4 px-4 py-2" style="background:#14532d;color:white;border-radius:10px;">
-    + Ajouter une offre
-</a>
+<div class="card shadow-sm">
+<div class="card-body">
 
-<div class="row g-4">
+<table class="table table-hover align-middle">
 
-    <!-- Total Offres -->
-    <div class="col-md-3">
-        <div class="card shadow border-0" style="background:linear-gradient(135deg,#14532d,#1D9E75);color:white;border-radius:15px;">
-            <div class="card-body">
-                <h6>Total Offres</h6>
-                <h2><?= count($liste); ?></h2>
-            </div>
-        </div>
-    </div>
+<thead class="table-light">
+<tr>
+    <th>ID</th>
+    <th>Nom</th>
+    <th>Email</th>
+    <th>Offre</th>
+    <th>Statut</th>
+    <th>Score Profil</th>
+</tr>
+</thead>
 
-    <!-- Candidatures -->
-    <div class="col-md-3">
-        <div class="card shadow border-0" style="background:linear-gradient(135deg,#1e3a8a,#3b82f6);color:white;border-radius:15px;">
-            <div class="card-body">
-                <h6>Candidatures</h6>
-                <h2><?= $total ?></h2>
-            </div>
-        </div>
-    </div>
+<tbody>
 
-    <!-- En attente -->
-    <div class="col-md-3">
-        <div class="card shadow border-0" style="background:linear-gradient(135deg,#b45309,#f59e0b);color:white;border-radius:15px;">
-            <div class="card-body">
-                <h6>En attente (%)</h6>
-                <h2><?= $attente ?>%</h2>
-            </div>
-        </div>
-    </div>
+<?php foreach ($liste as $c): ?>
 
-    <!-- Validées -->
-    <div class="col-md-3">
-        <div class="card shadow border-0" style="background:linear-gradient(135deg,#065f46,#10b981);color:white;border-radius:15px;">
-            <div class="card-body">
-                <h6>Validées (%)</h6>
-                <h2><?= $validees ?>%</h2>
-            </div>
-        </div>
-    </div>
+<tr>
 
-    <!-- Refusées -->
-    <div class="col-md-3">
-        <div class="card shadow border-0" style="background:linear-gradient(135deg,#7f1d1d,#ef4444);color:white;border-radius:15px;">
-            <div class="card-body">
-                <h6>Refusées (%)</h6>
-                <h2><?= $refusees ?>%</h2>
-            </div>
-        </div>
-    </div>
+    <td><?= $c['id'] ?></td>
+
+    <td><?= htmlspecialchars($c['nom']) ?></td>
+
+    <td><?= htmlspecialchars($c['email']) ?></td>
+
+    <td><?= htmlspecialchars($c['titre']) ?></td>
+
+    <!-- 🔹 STATUT -->
+    <td>
+        <?php
+        switch($c['statut']) {
+            case 'validee':
+                echo "<span class='badge bg-success'>Validée</span>";
+                break;
+            case 'refusee':
+                echo "<span class='badge bg-danger'>Refusée</span>";
+                break;
+            case 'entretien':
+                echo "<span class='badge bg-info'>Entretien</span>";
+                break;
+            default:
+                echo "<span class='badge bg-warning text-dark'>En attente</span>";
+        }
+        ?>
+    </td>
+
+    <!-- 🔥 SCORE PROFIL PRO -->
+    <td>
+        <?php
+        // 🔥 calcul score
+        $score = Candidature::calculerScore($c);
+
+        // 🔥 niveau (faible / moyen / fort)
+        $niveau = Candidature::getNiveauProfil($score);
+        ?>
+
+        <span class="badge bg-<?= $niveau['class'] ?>">
+            <?= $niveau['label'] ?> (<?= $score ?>%)
+        </span>
+    </td>
+
+</tr>
+
+<?php endforeach; ?>
+
+</tbody>
+
+</table>
 
 </div>
-
-<!-- 🔥 BARRE VISUELLE (PRO MAX) -->
-<div class="card mt-5 shadow border-0">
-    <div class="card-body">
-
-        <h5 class="mb-4">📈 Répartition des candidatures</h5>
-
-        <div class="progress" style="height:25px;border-radius:15px;">
-            <div class="progress-bar bg-success" style="width: <?= $validees ?>%">
-                <?= $validees ?>%
-            </div>
-
-            <div class="progress-bar bg-warning text-dark" style="width: <?= $attente ?>%">
-                <?= $attente ?>%
-            </div>
-
-            <div class="progress-bar bg-danger" style="width: <?= $refusees ?>%">
-                <?= $refusees ?>%
-            </div>
-        </div>
-
-    </div>
-</div>
-
-<!-- Activité -->
-<div class="card shadow-sm mt-4 border-0">
-    <div class="card-header bg-white fw-bold">
-        ⚡ Activité récente
-    </div>
-    <div class="card-body">
-        <ul class="mb-0">
-            <li>🟢 Nouvelle offre ajoutée</li>
-            <li>🔵 Candidature reçue</li>
-            <li>🟡 Candidature validée</li>
-            <li>🔴 Candidature refusée</li>
-        </ul>
-    </div>
 </div>
 
 <?php

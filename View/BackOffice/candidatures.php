@@ -1,80 +1,130 @@
 <?php
+// 🔹 Controller + Model
 include_once __DIR__ . '/../../Controller/CandidatureController.php';
+require_once __DIR__ . '/../../Model/Candidature.php';
 
-$candidatureC = new CandidatureController();
+// 🔹 Instance controller
+$cC = new CandidatureController();
 
-$message = "";
-$type = "";
 
-// 🔥 ACTIONS
+/* ============================================================
+   🔥 1. GESTION DES ACTIONS (valider, refuser, supprimer...)
+   ============================================================ */
+
 if (isset($_GET['action']) && isset($_GET['id'])) {
 
-    $id = (int) $_GET['id'];
-    $action = $_GET['action'];
+    $id = (int) $_GET['id'];         // ID candidature
+    $action = $_GET['action'];       // action demandée
 
+    // ✅ VALIDER candidature
     if ($action === 'valider') {
-        $candidatureC->changerStatut($id, 'validee');
+        $cC->changerStatut($id, 'validee');
         header('Location: candidatures.php');
         exit();
     }
 
+    // ❌ REFUSER candidature
     if ($action === 'refuser') {
-        $candidatureC->changerStatut($id, 'refusee');
+        $cC->changerStatut($id, 'refusee');
         header('Location: candidatures.php');
         exit();
     }
 
+    // 🗑 SUPPRIMER candidature
     if ($action === 'supprimer') {
-        $candidatureC->supprimerCandidature($id);
-        header('Location: candidatures.php');
+
+        $result = $cC->supprimerCandidature($id);
+
+        // 🔁 REDIRECTION AVEC MESSAGE
+        if ($result) {
+            header('Location: candidatures.php?success=delete');
+        } else {
+            header('Location: candidatures.php?error=delete');
+        }
         exit();
     }
 
-    // 📅 PLANIFIER ENTRETIEN
+    // 📅 PLANIFIER entretien
     if ($action === 'planifier' && $_SERVER['REQUEST_METHOD'] === 'POST') {
 
         $date = $_POST['date'] ?? '';
-        $heure = $_POST['heure'] ?? '';
+        $heure = substr($_POST['heure'] ?? '', 0, 5);
 
-        // 🔥 CORRECTION FORMAT HEURE
-        $heure = substr($heure, 0, 5);
+        $cC->planifierEntretien($id, $date, $heure);
 
-        try {
-            $candidatureC->planifierEntretien($id, $date, $heure);
-            header("Location: candidatures.php?success=1");
-            exit();
-        } catch (Exception $e) {
-            die("ERREUR: " . $e->getMessage());
-        }
+        header("Location: candidatures.php?success=plan");
+        exit();
     }
 }
 
-// 🔍 DATA
-$search = htmlspecialchars(trim($_GET['search'] ?? ''));
-$filtre = $_GET['statut'] ?? 'all';
 
+/* ============================================================
+   🔥 2. RÉCUPÉRATION DES DONNÉES (liste + recherche + filtre)
+   ============================================================ */
+
+$search = trim($_GET['search'] ?? '');     // valeur recherche
+$filtre = $_GET['statut'] ?? 'all';        // filtre statut
+
+// 🔍 SI recherche → search()
+// 📄 SINON → afficher tout
 $liste = !empty($search)
-    ? $candidatureC->rechercherCandidatures($search)
-    : $candidatureC->afficherCandidatures();
+    ? $cC->rechercherCandidatures($search)
+    : $cC->afficherCandidatures();
 
+// 🔹 FILTRAGE PAR STATUT
 if ($filtre !== 'all') {
     $liste = array_filter($liste, fn($c) => $c['statut'] === $filtre);
 }
 
+
+// 🔹 BUFFER HTML
 ob_start();
 ?>
 
 <h2 class="mb-4">📄 Gestion des candidatures</h2>
 
-<?php if (isset($_GET['success'])) { ?>
-<div class="alert alert-success">✅ Entretien planifié avec succès</div>
-<?php } ?>
 
-<form method="GET" class="mb-3 d-flex" style="gap:10px;">
+<!-- ============================================================
+     🔥 3. MESSAGES (SUCCESS / ERROR)
+     ============================================================ -->
+
+<?php if (isset($_GET['success'])): ?>
+
+    <?php if ($_GET['success'] == 'delete'): ?>
+        <div class="alert alert-success">
+            ✅ Candidature supprimée avec succès
+        </div>
+
+    <?php elseif ($_GET['success'] == 'plan'): ?>
+        <div class="alert alert-success">
+            📅 Entretien planifié avec succès
+        </div>
+
+    <?php endif; ?>
+
+<?php endif; ?>
+
+<?php if (isset($_GET['error'])): ?>
+<div class="alert alert-danger">
+    ❌ Une erreur est survenue
+</div>
+<?php endif; ?>
+
+
+<!-- ============================================================
+     🔍 4. FORMULAIRE DE RECHERCHE
+     ============================================================ -->
+
+<form method="GET" class="mb-3 d-flex gap-2">
     <input type="text" name="search" class="form-control"
-           placeholder="🔍 Rechercher..." value="<?= $search ?>">
+           placeholder="🔍 Rechercher..." value="<?= htmlspecialchars($search) ?>">
     <button class="btn btn-success">Rechercher</button>
 </form>
+
+
+<!-- ============================================================
+     🔹 5. FILTRES PAR STATUT
+     ============================================================ -->
 
 <div class="mb-3">
     <a href="candidatures.php" class="btn btn-outline-secondary btn-sm">Toutes</a>
@@ -84,17 +134,25 @@ ob_start();
     <a href="?statut=refusee" class="btn btn-outline-danger btn-sm">Refusées</a>
 </div>
 
+
+<!-- ============================================================
+     📊 6. TABLE DES CANDIDATURES
+     ============================================================ -->
+
 <div class="card shadow-sm border-0">
 <div class="card-body">
 
-<table class="table table-hover align-middle">
+<table class="table table-hover align-middle text-center">
+
 <thead class="table-light">
 <tr>
-    <th>#</th>
+    <th>ID</th>
     <th>Nom</th>
     <th>Email</th>
     <th>Offre</th>
     <th>Statut</th>
+    <th>Score</th>
+    <th>Priorité</th>
     <th>Date</th>
     <th>Actions</th>
 </tr>
@@ -102,54 +160,123 @@ ob_start();
 
 <tbody>
 
-<?php foreach ($liste as $c) { ?>
+<?php foreach ($liste as $c): ?>
+
+<?php
+// 🔥 CALCUL SCORE + PRIORITÉ
+$score = Candidature::calculerScore($c);
+$niveau = Candidature::getNiveauProfil($score);
+$priorite = Candidature::getPriorite($score);
+?>
+
 <tr>
-    <td><?= $c['id'] ?></td>
-    <td><?= htmlspecialchars($c['nom']) ?></td>
-    <td><?= htmlspecialchars($c['email']) ?></td>
-    <td><?= htmlspecialchars($c['titre']) ?></td>
 
-    <!-- ✅ STATUT -->
-    <td>
-        <?php if ($c['statut'] === 'en_attente') { ?>
-            <span class="badge bg-warning">⏳ En attente</span>
+<td><?= $c['id'] ?></td>
+<td><?= htmlspecialchars($c['nom']) ?></td>
+<td><?= htmlspecialchars($c['email']) ?></td>
+<td><?= htmlspecialchars($c['titre']) ?></td>
 
-        <?php } elseif ($c['statut'] === 'validee') { ?>
-            <span class="badge bg-success">✅ Validée</span>
 
-        <?php } elseif ($c['statut'] === 'entretien') { ?>
-            <span class="badge bg-primary">📅 Entretien</span>
-            <div class="small text-primary mt-1">
-                <?= $c['date_entretien'] ?> à <?= substr($c['heure_entretien'],0,5) ?>
-            </div>
+<!-- ============================================================
+     🔹 STATUT VISUEL
+     ============================================================ -->
+<td>
+<?php if ($c['statut'] === 'en_attente'): ?>
+    <span class="badge bg-warning text-dark">⏳ En attente</span>
 
-        <?php } else { ?>
-            <span class="badge bg-danger">❌ Refusée</span>
-        <?php } ?>
-    </td>
+<?php elseif ($c['statut'] === 'validee'): ?>
+    <span class="badge bg-success">✅ Validée</span>
 
-    <td><?= $c['date_candidature'] ?></td>
+<?php elseif ($c['statut'] === 'entretien'): ?>
+    <span class="badge bg-primary d-block mb-1">📅 Entretien</span>
+    <small class="text-muted">
+        <?= date('d/m/Y', strtotime($c['date_entretien'])) ?>
+        à <?= substr($c['heure_entretien'],0,5) ?>
+    </small>
 
-    <!-- ✅ ACTIONS -->
-    <td>
-        <a href="show.php?id=<?= $c['id'] ?>" class="btn btn-sm btn-info">👁</a>
+<?php else: ?>
+    <span class="badge bg-danger">❌ Refusée</span>
+<?php endif; ?>
+</td>
 
-        <a href="?action=valider&id=<?= $c['id'] ?>" class="btn btn-sm btn-success">✔</a>
-        <a href="?action=refuser&id=<?= $c['id'] ?>" class="btn btn-sm btn-danger">✖</a>
 
-        <?php if ($c['statut'] === 'validee' || $c['statut'] === 'entretien') { ?>
-        <button type="button" class="btn btn-sm btn-primary"
-            data-bs-toggle="modal"
-            data-bs-target="#planModal"
-            data-id="<?= $c['id'] ?>"
-            data-date="<?= $c['date_entretien'] ?? '' ?>"
-            data-heure="<?= $c['heure_entretien'] ?? '' ?>">
-            📅
-        </button>
-        <?php } ?>
-    </td>
+<!-- 🔥 SCORE -->
+<td>
+    <span class="badge bg-<?= $niveau['class'] ?>">
+        <?= $niveau['label'] ?> (<?= $score ?>%)
+    </span>
+</td>
+
+<!-- 🔥 PRIORITÉ -->
+<td>
+    <span class="badge bg-<?= $priorite['class'] ?>">
+        <?= $priorite['label'] ?>
+    </span>
+</td>
+
+<td><?= date('d/m/Y H:i', strtotime($c['date_candidature'])) ?></td>
+
+
+<!-- ============================================================
+     🔥 7. ACTIONS (buttons)
+     ============================================================ -->
+
+<td>
+<div class="d-flex justify-content-center gap-2">
+
+    <!-- 👁 VOIR -->
+    <a href="show.php?id=<?= $c['id'] ?>" class="btn btn-sm btn-info">👁</a>
+
+    <!-- ✔ VALIDER -->
+    <a href="?action=valider&id=<?= $c['id'] ?>" class="btn btn-sm btn-success">✔</a>
+
+    <!-- MENU ACTIONS -->
+    <div class="dropdown">
+        <button class="btn btn-sm btn-dark dropdown-toggle"
+                data-bs-toggle="dropdown">⋮</button>
+
+        <ul class="dropdown-menu">
+
+            <!-- ❌ REFUSER -->
+            <li>
+                <a class="dropdown-item text-danger"
+                   href="?action=refuser&id=<?= $c['id'] ?>">
+                   ❌ Refuser
+                </a>
+            </li>
+
+            <!-- 🗑 SUPPRIMER -->
+            <li>
+                <a class="dropdown-item text-dark"
+                   href="?action=supprimer&id=<?= $c['id'] ?>"
+                   onclick="return confirm('Confirmer suppression ?')">
+                   🗑 Supprimer
+                </a>
+            </li>
+
+            <!-- 📅 PLANIFIER -->
+            <?php if ($c['statut'] === 'validee' || $c['statut'] === 'entretien'): ?>
+            <li>
+                <button class="dropdown-item text-primary"
+                        data-bs-toggle="modal"
+                        data-bs-target="#planModal"
+                        data-id="<?= $c['id'] ?>"
+                        data-date="<?= $c['date_entretien'] ?? '' ?>"
+                        data-heure="<?= $c['heure_entretien'] ?? '' ?>">
+                    📅 Planifier
+                </button>
+            </li>
+            <?php endif; ?>
+
+        </ul>
+    </div>
+
+</div>
+</td>
+
 </tr>
-<?php } ?>
+
+<?php endforeach; ?>
 
 </tbody>
 </table>
@@ -157,7 +284,11 @@ ob_start();
 </div>
 </div>
 
-<!-- 📅 MODAL -->
+
+<!-- ============================================================
+     📅 8. MODAL PLANIFICATION ENTRETIEN
+     ============================================================ -->
+
 <div class="modal fade" id="planModal">
 <div class="modal-dialog">
 <div class="modal-content">
@@ -165,20 +296,13 @@ ob_start();
 <form method="POST" id="planForm">
 
 <div class="modal-header">
-<h5>📅 Planifier / Modifier entretien</h5>
+<h5>📅 Planifier entretien</h5>
 <button class="btn-close" data-bs-dismiss="modal"></button>
 </div>
 
 <div class="modal-body">
-
-<input type="text" name="date" id="dateInput"
-       placeholder="YYYY-MM-DD"
-       class="form-control mb-2" required>
-
-<input type="text" name="heure" id="heureInput"
-       placeholder="HH:MM"
-       class="form-control" required>
-
+<input type="date" name="date" id="dateInput" class="form-control mb-2" required>
+<input type="time" name="heure" id="heureInput" class="form-control" required>
 </div>
 
 <div class="modal-footer">
@@ -191,6 +315,11 @@ ob_start();
 </div>
 </div>
 
+
+<!-- ============================================================
+     ⚙️ 9. SCRIPT JS POUR MODAL
+     ============================================================ -->
+
 <script>
 var planModal = document.getElementById('planModal');
 
@@ -198,15 +327,13 @@ planModal.addEventListener('show.bs.modal', function (event) {
 
     var button = event.relatedTarget;
 
-    var id = button.getAttribute('data-id');
-    var date = button.getAttribute('data-date');
-    var heure = button.getAttribute('data-heure');
-
+    // 🔹 Injecter ID dans le form
     document.getElementById('planForm').action =
-        "candidatures.php?action=planifier&id=" + id;
+        "candidatures.php?action=planifier&id=" + button.getAttribute('data-id');
 
-    document.getElementById('dateInput').value = date ?? '';
-    document.getElementById('heureInput').value = heure ?? '';
+    // 🔹 Pré-remplir
+    document.getElementById('dateInput').value = button.getAttribute('data-date') || '';
+    document.getElementById('heureInput').value = button.getAttribute('data-heure') || '';
 });
 </script>
 

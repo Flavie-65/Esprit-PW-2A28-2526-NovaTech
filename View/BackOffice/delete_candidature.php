@@ -4,7 +4,15 @@ include_once '../../Controller/CandidatureController.php';
 $cC = new CandidatureController();
 
 if (isset($_GET['id'])) {
-    $cC->supprimerCandidature($_GET['id']);
-}
 
-header('Location: candidatures.php');
+    $result = $cC->supprimerCandidature($_GET['id']);
+
+    if ($result) {
+        header('Location: candidatures.php?success=delete');
+    } else {
+        header('Location: candidatures.php?error=delete');
+    }
+
+    exit();
+}
+?>
