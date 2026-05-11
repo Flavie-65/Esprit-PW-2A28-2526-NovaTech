@@ -5,8 +5,6 @@ require_once __DIR__ . '/../libraries/fpdf/fpdf.php';
 class ExportController {
 
     public function genererRapportProjet($id_projet) {
-        // Désactiver l'affichage des erreurs juste pour cette fonction
-        // Cela évite que les avertissements bloquent le PDF
         ini_set('display_errors', 0);
 
         $db = config::getConnexion();
@@ -53,7 +51,6 @@ class ExportController {
             $pdf->Cell(45, 10, iconv('UTF-8', 'windows-1252', $t->statut), 1, 1, 'C');
         }
 
-        // Nettoyer le tampon de sortie pour être sûr qu'aucun texte parasite ne traîne
         if (ob_get_length()) ob_end_clean();
 
         $pdf->Output('I', 'Rapport_' . $projet->nom_projet . '.pdf');

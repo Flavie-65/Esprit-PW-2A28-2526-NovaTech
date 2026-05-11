@@ -1,0 +1,128 @@
+/* Reset et Base */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #F1EFE8; 
+    color: #333;
+    line-height: 1.6;
+}
+
+.container {
+    width: 85%;
+    margin: 30px auto;
+    background-color: #fff;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+h1, h2 {
+    color: #2c3e50;
+    margin-bottom: 25px;
+    border-bottom: 3px solid #1D9E75; /* Ton Vert */
+    padding-bottom: 10px;
+    text-transform: uppercase;
+    font-size: 1.5rem;
+}
+
+/* Tableaux */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    background-color: #fff;
+    overflow: hidden;
+    border-radius: 8px;
+}
+
+thead {
+    background-color: #1D9E75; /* Ton Vert */
+    color: white;
+}
+
+th, td {
+    padding: 15px;
+    text-align: left;
+    border-bottom: 1px solid #eee;
+}
+
+tr:hover {
+    background-color: #f9fdfc;
+}
+
+/* Boutons et Liens */
+.btn-ajouter, button[type="submit"] {
+    display: inline-block;
+    background-color: #1D9E75; /* Ton Vert */
+    color: white;
+    padding: 12px 24px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: bold;
+    border: none;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.btn-ajouter:hover, button[type="submit"]:hover {
+    background-color: #167e5d;
+}
+
+.btn-annuler {
+    color: #666;
+    text-decoration: none;
+    margin-left: 15px;
+    font-size: 0.9rem;
+}
+
+.btn-annuler:hover {
+    text-decoration: underline;
+}
+
+/* Formulaires */
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: bold;
+    color: #2c3e50;
+}
+
+.form-group input,
+.form-group textarea,
+.form-group select {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid #e0e0e0;
+    border-radius: 6px;
+    font-size: 14px;
+    transition: border-color 0.3s;
+}
+
+.form-group input:focus {
+    border-color: #1D9E75;
+    outline: none;
+}
+
+/* Boîte d'erreurs (Contrôle de saisie PHP) */
+.error-box {
+    background-color: #f8d7da;
+    color: #721c24;
+    padding: 15px;
+    margin-bottom: 25px;
+    border-left: 5px solid #dc3545;
+    border-radius: 4px;
+}
+
+.error-box ul {
+    margin-left: 20px;
+    list-style-type: square;
+}
