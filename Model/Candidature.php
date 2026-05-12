@@ -94,7 +94,14 @@ class Candidature {
         return $req->fetchAll(PDO::FETCH_ASSOC);
     }
 
+
+
+    
     /* ================= SCORING ================= */
+
+
+
+
 
     public static function calculerScore($candidat) {
 

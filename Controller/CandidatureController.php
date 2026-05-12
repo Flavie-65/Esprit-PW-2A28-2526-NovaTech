@@ -37,7 +37,10 @@ class CandidatureController {
             throw new Exception("Champs obligatoires");
         }
 
+        
         // 🔥 LIMITE 10
+
+
         if (Candidature::countByOffre($db, $offre_id) >= 10) {
             throw new Exception("Offre complète (10 max)");
         }

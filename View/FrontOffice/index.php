@@ -39,65 +39,102 @@ ob_start();
     color: white;
     font-weight: 500;
     transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-block;
+    text-align: center;
 }
 
 .btn-postuler:hover {
     transform: scale(1.02);
     background: #147762;
+    color: white;
 }
 </style>
 
-<!-- 🔹 TITRE -->
+<!-- TITRE -->
 <div class="mb-4">
-    <h2 class="fw-bold">💼 Offres d'emploi</h2>
-    <p class="text-muted">Découvrez les meilleures opportunités et postulez en quelques clics</p>
+
+    <h2 class="fw-bold">
+        💼 Offres d'emploi
+    </h2>
+
+    <p class="text-muted">
+        Découvrez les meilleures opportunités et postulez en quelques clics
+    </p>
+
 </div>
 
 <?php if (!empty($offres)): ?>
 
     <div class="row g-4">
 
-    <?php foreach ($offres as $offre): ?>
-        <div class="col-md-6">
+        <?php foreach ($offres as $offre): ?>
 
-            <div class="card shadow-sm p-4 h-100">
+            <div class="col-md-6">
 
-                <!-- BADGE -->
-                <div class="badge-offre">Offre disponible</div>
+                <div class="card shadow-sm p-4 h-100">
 
-                <!-- TITRE -->
-                <h4 style="color:#0F6E5E;">
-                    <?= $offre['titre'] ?>
-                </h4>
+                    <!-- BADGE -->
+                    <div class="badge-offre">
+                        Offre disponible
+                    </div>
 
-                <!-- DESCRIPTION COURTE -->
-                <p class="text-muted small">
-                    <?= substr($offre['description'], 0, 100) ?>...
-                </p>
+                    <!-- TITRE -->
+                    <h4 style="color:#0F6E5E;">
 
-                <!-- INFOS -->
-                <div class="mt-2 text-muted">
-                    💼 <b><?= $offre['competences'] ?></b><br>
-                    💰 <?= $offre['budget'] ?> DT<br>
-                    📅 <?= $offre['date_limite'] ?>
+                        <?= htmlspecialchars($offre['titre']) ?>
+
+                    </h4>
+
+                    <!-- DESCRIPTION -->
+                    <p class="text-muted small">
+
+                        <?= htmlspecialchars(substr($offre['description'], 0, 100)) ?>...
+
+                    </p>
+
+                    <!-- INFOS -->
+                    <div class="mt-2 text-muted">
+
+                        💼 
+                        <b>
+                            <?= htmlspecialchars($offre['competences']) ?>
+                        </b>
+
+                        <br>
+
+                        💰 
+                        <?= htmlspecialchars($offre['budget']) ?> DT
+
+                        <br>
+
+                        📅 
+                        <?= htmlspecialchars($offre['date_limite']) ?>
+
+                    </div>
+
+                    <!-- BOUTON -->
+                    <a href="postuler.php?id=<?= $offre['id_offre'] ?>"
+                       class="btn btn-postuler mt-3">
+
+                        🚀 Postuler
+
+                    </a>
+
                 </div>
-
-                <!-- BOUTON -->
-                <a  href="postuler.php?id=<?= $offre['id'] ?>" class="btn btn-postuler mt-3">
-                    🚀 Postuler
-                </a>
 
             </div>
 
-        </div>
-    <?php endforeach; ?>
+        <?php endforeach; ?>
 
     </div>
 
 <?php else: ?>
 
     <div class="alert alert-info">
+
         Aucune offre disponible pour le moment.
+
     </div>
 
 <?php endif; ?>

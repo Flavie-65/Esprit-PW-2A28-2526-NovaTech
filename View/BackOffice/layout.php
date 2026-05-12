@@ -118,9 +118,17 @@ $current = basename($_SERVER['PHP_SELF']);
         </a>
 
         <h6>PROJETS</h6>
-        <a href="#"><i class="bi bi-folder"></i> Projets</a>
-        <a href="#"><i class="bi bi-list-check"></i> Tâches</a>
 
+<a href="../../Controller/ProjetController.php"
+   class="<?= ($current == 'projets.php') ? 'active-link' : '' ?>">
+
+    <i class="bi bi-folder"></i> Projets
+
+</a>
+
+<a href="../../Controller/TacheController.php?action=list">
+    <i class="bi bi-list-check"></i> Tâches
+</a>
         <h6>COLLABORATION</h6>
         <a href="#"><i class="bi bi-calendar"></i> Planning</a>
         <a href="#"><i class="bi bi-people"></i> Équipe</a>
